@@ -1,5 +1,5 @@
 import React from 'react';
-import Route from './routing/Route';
+import Route from './routing/route';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
