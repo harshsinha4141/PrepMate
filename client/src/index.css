@@ -1,0 +1,186 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* @layer base {
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+} */
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.fade-out {
+  animation: fadeOut 1s ease-out forwards;
+}
+@keyframes glowPulse {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  }
+  50% {
+    text-shadow: 0 0 25px rgba(255, 255, 150, 0.9);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.glow-pulse {
+  animation: glowPulse 1.5s infinite ease-in-out;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(-50px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-fall {
+  animation-name: fall;
+  animation-timing-function: ease-in;
+  animation-iteration-count: 1;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to right, #0891b2, #2563eb);
+  border-radius: 10px;
+}
+
+/* ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #2563eb, #7c3aed);
+} */
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Gradient text selection */
+::selection {
+  background: #3b82f680;
+  color: white;
+}
+
+/* Custom gradient backgrounds */
+.gradient-mesh {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-size: 400% 400%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* React-Toastify theme overrides */
+.Toastify__toast-container {
+  z-index: 99999;
+}
+
+.Toastify__toast {
+  background: linear-gradient(180deg, rgba(15,23,42,0.95), rgba(17,24,39,0.95)); /* dark slate */
+  color: #e6f7ff; /* light cyan-ish text */
+  border: 1px solid rgba(59,130,246,0.12);
+  box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+  border-radius: 12px;
+}
+
+.Toastify__toast--success {
+  --toastify-color-success: #06b6d4; /* cyan-400 */
+  background-image: linear-gradient(90deg, rgba(6,182,212,0.06), rgba(59,130,246,0.02));
+}
+
+.Toastify__toast--error {
+  --toastify-color-error: #fb7185; /* rose-400 */
+  background-image: linear-gradient(90deg, rgba(251,113,133,0.03), rgba(2,6,23,0.02));
+}
+
+.Toastify__toast-body {
+  color: #e6f7ff;
+  font-weight: 500;
+}
+
+.Toastify__progress-bar {
+  background: linear-gradient(90deg, #06b6d4, #2563eb); 
+  height: 4px;
+  border-radius: 0 0 12px 12px;
+}
+
+.Toastify__close-button > svg {
+  color: #cfeffd;
+}
+
+.Toastify__toast--default {
+  background: linear-gradient(180deg, rgba(15,23,42,0.95), rgba(17,24,39,0.95));
+}
+
+/* Ensure success icons (SVGs) use the cyan theme color */
+.Toastify__toast--success svg,
+.Toastify__toast--success svg * {
+  fill: #06b6d4 !important;
+  stroke: #06b6d4 !important;
+  color: #06b6d4 !important;
+}
+
+/* Prevent react-toastify top toasts from overlapping the fixed navbar */
+:root {
+  --nav-height: 4rem; /* matches h-16 (4rem). Adjust if navbar height changes */
+}
+
+/* Override top container positions (important to beat inline styles from Toastify) */
+.Toastify__toast-container--top-center,
+.Toastify__toast-container--top-left,
+.Toastify__toast-container--top-right {
+  top: calc(var(--nav-height) + 0.5rem) !important;
+}
+
+/* Also handle the mobile full-width top container */
+.Toastify__toast-container--top-full-width {
+  top: calc(var(--nav-height) + 0.5rem) !important;
+}
