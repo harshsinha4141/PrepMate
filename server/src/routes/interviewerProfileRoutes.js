@@ -4,7 +4,7 @@ import {
   getIncomingMeetings, 
   getCompletedMeetings,
   getMeetingById
-} from "../controllers/InterviewerProfileController.js";
+} from "../controllers/interviewerProfileController.js";
 import { checkUserStatus } from "../middlewares/checkUserStatus.js";
 
 const router = express.Router();

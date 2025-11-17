@@ -1,6 +1,6 @@
 import express from "express";
 import { jwtAuth } from "../middlewares/auth.js";
-import { bookMeeting } from "../controllers/IntervieweeController.js";
+import { bookMeeting } from "../controllers/intervieweeController.js";
 import { checkUserStatus } from "../middlewares/checkUserStatus.js";
 
 const router = express.Router();

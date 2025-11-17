@@ -3,7 +3,7 @@ import { jwtAuth } from "../middlewares/auth.js";
 import { 
   getIncomingMeetings, 
   getCompletedMeetings
-} from "../controllers/IntervieweeProfileController.js";
+} from "../controllers/intervieweeProfileController.js";
 import { checkUserStatus } from "../middlewares/checkUserStatus.js";
 
 const router = express.Router();
