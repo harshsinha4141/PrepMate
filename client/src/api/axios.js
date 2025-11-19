@@ -1,8 +1,10 @@
 import axios from "axios";
 
-// Use Vite environment variable `VITE_API_BASE_URL` if provided.
-// In Vite, environment variables must be prefixed with `VITE_` and are available via `import.meta.env`.
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+// 🔄 Quick toggle for testing
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 
+  "http://localhost:5000/api";     // 👈 LOCAL (uncomment to see console logs)
+//   // "https://prepmate-7362.onrender.com/api"; // 👈 PRODUCTION (uncomment for deployed server)
+
 
 // Create axios instance
 const api = axios.create({

@@ -114,7 +114,6 @@ export const getUserStats = async (req, res) => {
     // Use values from the User document only (do not mix with interviewer profile)
     const interviewsTaken = user.interviewsTaken || 0;
     const interviewsGiven = user.interviewsGiven || 0;
-    const averageRating = (user.ratingSum && interviewsTaken > 0) ? (user.ratingSum / interviewsTaken) : 0;
 
     res.json({
       firstName: user.firstName,
@@ -122,7 +121,7 @@ export const getUserStats = async (req, res) => {
       coins: user.coins,
       interviewsGiven,
       interviewsTaken,
-      averageRating: averageRating.toFixed(1),
+      averageRating: user.averageRating, // Use the virtual field
       warnings: user.warningCount || 0,
       disabled: user.disabled || false,
     });

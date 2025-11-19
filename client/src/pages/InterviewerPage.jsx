@@ -53,8 +53,9 @@ export default function InterviewerPage() {
     if (selectedDateFilter !== "all") {
       const now = new Date();
       filtered = filtered.filter((m) => {
+        // Use meeting time as-is from database (IST)
         const meetingDate = new Date(m.timeSlot);
-        const diffHours = (meetingDate - now) / (1000 * 60 * 60);
+        const diffHours = (meetingDate - now) / (1000 * 60);
         const diffDays = diffHours / 24;
 
         switch (selectedDateFilter) {
@@ -75,8 +76,10 @@ export default function InterviewerPage() {
     // Filter by time of day
     if (selectedTimeFilter !== "all") {
       filtered = filtered.filter((m) => {
+        // Convert UTC time back to IST by adding 5:30 hours
         const meetingDate = new Date(m.timeSlot);
-        const meetingHour = meetingDate.getHours();
+        const istDate = new Date(meetingDate.getTime() + 5.5 * 60 * 60 * 1000);
+        const meetingHour = istDate.getUTCHours();
 
         switch (selectedTimeFilter) {
           case "morning":
@@ -130,28 +133,24 @@ export default function InterviewerPage() {
     setSearchQuery("");
   };
 
+  const fetchMeetings = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await api.get(`/interviewer/pending?page=${page}&limit=10`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setMeetings(res.data.meetings || []);
+      setTotalPages(res.data.totalPages || 1);
+    } catch (err) {
+      toast.error("Failed to load meetings");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchMeetings = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        const res = await api.get(
-          `/interviewer/pending?page=${page}&limit=10`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-
-        setMeetings(res.data.meetings || []);
-        setTotalPages(res.data.totalPages || 1);
-      } catch (err) {
-        console.error("Failed to load meetings:", err);
-        toast.error("Failed to load meetings");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchMeetings();
   }, [page]); // 👈 re-run when page changes
 
@@ -164,7 +163,7 @@ export default function InterviewerPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-  toast.success(res.data.message || "Meeting accepted successfully!");
+      toast.success(res.data.message || "Meeting accepted successfully!");
       // Remove accepted meeting from list
       const updated = meetings.filter((m) => m.meetingId !== meetingId);
       const sorted = updated.sort((a, b) => {
@@ -175,32 +174,33 @@ export default function InterviewerPage() {
 
       setMeetings(sorted);
     } catch (err) {
-      console.error("Failed to accept meeting:", err);
+      // console.error("Failed to accept meeting:", err);
       toast.error(err.response?.data?.message || "Failed to accept meeting");
     } finally {
       setAcceptingId(null);
     }
   };
 
- const formatDate = (dateString) => {
-   const date = new Date(dateString);
+  const formatDate = (dateString) => {
+    // Convert UTC time back to IST by adding 5:30 hours
+    const date = new Date(dateString);
+    const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
 
-   return {
-     day: date.toLocaleDateString("en-IN", {
-       timeZone: "Asia/Kolkata",
-       weekday: "short",
-       year: "numeric",
-       month: "short",
-       day: "numeric",
-     }),
-     time: date.toLocaleTimeString("en-IN", {
-       timeZone: "Asia/Kolkata",
-       hour: "2-digit",
-       minute: "2-digit",
-     }),
-   };
- };
+    const day = String(istDate.getUTCDate()).padStart(2, "0");
+    const month = String(istDate.getUTCMonth() + 1).padStart(2, "0");
+    const year = istDate.getUTCFullYear();
+    const hour24 = istDate.getUTCHours();
+    const minute = String(istDate.getUTCMinutes()).padStart(2, "0");
 
+    // Convert to 12-hour format with AM/PM
+    const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+    const ampm = hour24 >= 12 ? "PM" : "AM";
+
+    return {
+      day: `${day}/${month}/${year}`,
+      time: `${hour12}:${minute} ${ampm} IST`,
+    };
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">

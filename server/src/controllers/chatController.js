@@ -6,7 +6,6 @@ export const startChat = async (req, res) => {
   const userId = req.user?._id;
 
   try {
-    console.log("📩 Starting chat for meeting (raw param):", meetingId);
     const Meeting = await import("../models/Meeting.js").then((m) => m.default);
 
     // Try find by ObjectId first, then fallback to meetingId string field
@@ -21,7 +20,7 @@ export const startChat = async (req, res) => {
     }
 
     if (!meeting) {
-      console.warn("⚠️ startChat: Meeting not found for param:", meetingId);
+      // Meeting not found
       return res.status(404).json({ success: false, message: "Meeting not found" });
     }
 
@@ -38,9 +37,8 @@ export const startChat = async (req, res) => {
         isActive: true,
       });
       await chat.save();
-      console.log("✅ New chat created:", chat._id, "for meeting", resolvedMeetingId);
     } else {
-      console.log("✅ Chat already exists:", chat._id, "for meeting", resolvedMeetingId);
+      // Chat already exists
     }
 
     res.status(200).json({
@@ -49,7 +47,7 @@ export const startChat = async (req, res) => {
       chat,
     });
   } catch (err) {
-    console.error("❌ Error starting chat:", err);
+    // Error starting chat
     res.status(500).json({
       success: false,
       message: "Failed to initialize chat",
@@ -91,7 +89,7 @@ export const sendMessage = async (req, res) => {
       chat,
     });
   } catch (err) {
-    console.error("❌ Error sending message:", err);
+    // Error sending message
     res.status(500).json({
       success: false,
       message: "Failed to send message",
@@ -105,7 +103,7 @@ export const getChatMessages = async (req, res) => {
   const { meetingId } = req.params;
 
   try {
-    console.log("📡 Fetching messages for meeting:", meetingId); // Debug log
+    // Check if meetingId is a valid ObjectId
 
     // Resolve the incoming meetingId param to the canonical Meeting._id
     let chat = null;
@@ -126,13 +124,12 @@ export const getChatMessages = async (req, res) => {
       }
 
       if (meeting) {
-        console.log("🔎 Resolved meeting param to meeting._id:", meeting._id);
         chat = await Chat.findOne({ meetingId: meeting._id }).populate([
           { path: "meetingId", populate: ["interviewerId", "intervieweeId"] },
         ]);
       }
     } catch (err) {
-      console.error("❌ Error resolving meeting in getChatMessages:", err);
+      // Error resolving meeting
     }
 
     // Fallback: try legacy lookup by raw meetingId (in case chat was created with a string id)
@@ -143,14 +140,11 @@ export const getChatMessages = async (req, res) => {
     }
 
     if (!chat) {
-      console.log("❌ Chat not found for meeting:", meetingId);
       return res.status(404).json({
         success: false,
         message: "Chat session not found.",
       });
     }
-
-    console.log("✅ Chat found with", chat.messages.length, "messages");
 
     // Return the complete chat object (not just messages and isActive)
     res.status(200).json({
@@ -164,7 +158,7 @@ export const getChatMessages = async (req, res) => {
       updatedAt: chat.updatedAt,
     });
   } catch (err) {
-    console.error("❌ Error fetching messages:", err);
+    // Error fetching messages
     res.status(500).json({
       success: false,
       message: "Failed to fetch messages",

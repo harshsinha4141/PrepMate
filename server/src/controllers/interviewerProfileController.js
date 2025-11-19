@@ -6,7 +6,6 @@ import Meeting from "../models/Meeting.js";
 export const getIncomingMeetings = async (req, res) => {
   try {
     const interviewer = await Interviewer.findOne({ userId: req.user._id }); if (!interviewer) return res.status(404).json({ message: "Interviewer profile not found" });
-    console.log("Interviewer found:", interviewer);
     // Find meetings where this Interviewer is the interviewer
     const meetings = await Meeting.find({
       interviewerId: interviewer._id,
@@ -74,7 +73,6 @@ export const getMeetingById = async (req, res) => {
 export const getCompletedMeetings = async (req, res) => {
   try {
     const interviewer = await Interviewer.findOne({ userId: req.user._id }); if (!interviewer) return res.status(404).json({ message: "Interviewer profile not found" });
-    console.log("Interviewer found:", interviewer);
 
     // Find meetings where this Interviewer is the interviewer
     const meetings = await Meeting.find({

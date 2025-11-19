@@ -123,7 +123,6 @@ export const acceptMeeting = async (req, res) => {
     // 📧 Send emails
     const userInterviewer = await User.findById(interviewer.userId);
     const userInterviewee = await User.findById(meeting.intervieweeId.userId);
-
     await sendEmail(
       userInterviewee.email,
       "✅ Your Interview Has Been Accepted!",
@@ -167,8 +166,6 @@ const reminderTime = new Date(meetingTime.getTime() - 10 * 60000);
 const now = new Date();
 const delay = reminderTime - now;
 
-console.log("Reminder delay in ms:", delay);
-
 if (delay > 0) {
   setTimeout(async () => {
     try {
@@ -206,23 +203,16 @@ if (delay > 0) {
 
       await sendEmail(userInterviewee.email, reminderSubject, intervieweeBody);
       await sendEmail(userInterviewer.email, reminderSubject, interviewerBody);
-
-      console.log("Reminder emails sent!");
     } catch (err) {
       console.error("Failed to send reminder emails:", err);
     }
-  }, delay);
-} else {
-  console.log("Reminder time already passed or less than 10 minutes away.");
-}
-
-    res.json({ message: "Meeting accepted", meeting });
+        }, delay);
+      }    res.json({ message: "Meeting accepted", meeting });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
 // 📌 Complete meeting
 export const completeMeeting = async (req, res) => {
   try {
@@ -250,18 +240,18 @@ export const completeMeeting = async (req, res) => {
       await interviewer.save();
     } catch (e) {}
 
-    // Also increment interviewee counters (they took this interview)
+    // Also increment interviewee counters (they gave this interview)
     try {
       if (meeting.intervieweeId) {
         const interviewee = await Interviewee.findById(meeting.intervieweeId).populate("userId");
         if (interviewee) {
-          interviewee.interviewsTaken = (interviewee.interviewsTaken || 0) + 1;
+          interviewee.interviewsGiven = (interviewee.interviewsGiven || 0) + 1;
           await interviewee.save();
 
           if (interviewee.userId) {
             const intervieweeUser = await User.findById(interviewee.userId._id || interviewee.userId);
             if (intervieweeUser) {
-              intervieweeUser.interviewsTaken = (intervieweeUser.interviewsTaken || 0) + 1;
+              intervieweeUser.interviewsGiven = (intervieweeUser.interviewsGiven || 0) + 1;
               await intervieweeUser.save();
             }
           }
@@ -281,7 +271,7 @@ export const completeMeeting = async (req, res) => {
       if (roomA) io.to(roomA).emit("meetingEnded", { meetingId: roomA, message: "The interviewer has ended the meeting." });
       if (roomB) io.to(roomB).emit("meetingEnded", { meetingId: roomB, message: "The interviewer has ended the meeting." });
     } catch (e) {
-      // best-effort
+      console.error("Error emitting meetingEnded:", e);
     }
 
     res.json({ message: "Meeting completed", reward, coins: user.coins });
@@ -357,7 +347,6 @@ export const markInterviewerStarted = async (req, res) => {
       const roomB = meeting._id && meeting._id.toString();
       if (roomA) io.to(roomA).emit("interviewerStartedUpdate", { meetingId: roomA });
       if (roomB) io.to(roomB).emit("interviewerStartedUpdate", { meetingId: roomB });
-      console.log(`📢 Emitted interviewerStartedUpdate for ${roomA} and ${roomB}`);
     }
 
     res.json({ message: "Interviewer started meeting", success: true });

@@ -39,7 +39,6 @@ const MeetingDetails = () => {
         });
         setMeeting(res.data.meeting);
       } catch (err) {
-        
       } finally {
         setLoading(false);
       }
@@ -67,7 +66,6 @@ const MeetingDetails = () => {
       } catch (err) {
         // If the chat API returns 404, we assume chat does not exist yet.
         if (err.response && err.response.status !== 404) {
-          
         }
         setChatExists(false);
       } finally {
@@ -97,9 +95,14 @@ const MeetingDetails = () => {
   };
 
   const handleStartChat = async () => {
-    const meetingTime = new Date(meeting.timeSlot);
+    // Convert UTC stored time back to IST for comparison
+    const storedDate = new Date(meeting.timeSlot);
+    const istMeetingTime = new Date(
+      storedDate.getTime() + 5.5 * 60 * 60 * 1000
+    );
     const now = new Date();
-    const diffMinutes = (meetingTime - now) / (1000 * 60);
+    const istNow = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+    const diffMinutes = (istMeetingTime - istNow) / (1000 * 60);
 
     if (diffMinutes > 10) {
       toast.warning("Chat will be available 10 minutes before the meeting.");
@@ -108,7 +111,7 @@ const MeetingDetails = () => {
     try {
       const token = localStorage.getItem("token");
       const id = meeting._id || meeting.meetingId;
-      
+
       const res = await api.post(
         `/chat/start/${id}`,
         {},
@@ -120,7 +123,6 @@ const MeetingDetails = () => {
         }
       );
 
-      
       if (res.status === 200 || res.status === 201) {
         // Success: set chat to exist and open the widget
         setChatExists(true);
@@ -135,7 +137,6 @@ const MeetingDetails = () => {
         setChatExists(true);
         setIsChatWidgetOpen(true);
       } else {
-        
         toast.error(
           err.response?.data?.message ||
             "Something went wrong while starting chat."
@@ -145,9 +146,14 @@ const MeetingDetails = () => {
   };
   const isMeetingStarted = () => {
     if (!meeting) return false;
-    const meetingTime = new Date(meeting.timeSlot);
+    // Convert UTC stored time to IST for comparison
+    const storedDate = new Date(meeting.timeSlot);
+    const istMeetingTime = new Date(
+      storedDate.getTime() + 5.5 * 60 * 60 * 1000
+    );
     const now = new Date();
-    return now >= meetingTime; // meeting is ON or passed
+    const istNow = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
+    return istNow >= istMeetingTime; // meeting is ON or passed
   };
 
   const getStatusColor = (status) => {
@@ -163,33 +169,43 @@ const MeetingDetails = () => {
       "bg-slate-700/30 text-slate-400 border-slate-600"
     );
   };
-   const handleJoinMeeting = async (meeting) => {
-      try {
-        if (!isMeetingStarted()) {
-          toast.warning(
-            `Video call will be available at the scheduled ${new Date(meeting.timeSlot).toLocaleString()}.`
-          );
-          return;
-        }
-        console.log(meeting);
-        const token = localStorage.getItem("token");
-        const id = meeting._id || meeting.meetingId;
-        const res = await api.post(
-          `/video/interview/${id}/start`,
-          {},
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+  const handleJoinMeeting = async (meeting) => {
+    try {
+      if (!isMeetingStarted()) {
+        // Convert UTC time back to IST for display
+        const date = new Date(meeting.timeSlot);
+        const istDate = new Date(date.getTime() + 5.5 * 60 * 60 * 1000);
+        const hour24 = istDate.getUTCHours();
+        const minute = String(istDate.getUTCMinutes()).padStart(2, "0");
+        const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
+        const ampm = hour24 >= 12 ? "PM" : "AM";
+        const formattedTime = `${hour12}:${minute} ${ampm}`;
+        const day = String(istDate.getUTCDate()).padStart(2, "0");
+        const month = String(istDate.getUTCMonth() + 1).padStart(2, "0");
+        const year = istDate.getUTCFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+
+        toast.warning(
+          `Video call will be available at the scheduled ${formattedDate} ${formattedTime} IST.`
         );
+        return;
+      }
+      // console.log(meeting);
+      const token = localStorage.getItem("token");
+      const id = meeting._id || meeting.meetingId;
+      const res = await api.post(
+        `/video/interview/${id}/start`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-        
-
-        navigate(`/video/${id}`);
-      } catch (err) {
-       
-       toast.error("Unable to start meeting. Try again later.");
-     }
-   };
+      navigate(`/video/${id}`);
+    } catch (err) {
+      toast.error("Unable to start meeting. Try again later.");
+    }
+  };
 
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
@@ -324,15 +340,22 @@ const MeetingDetails = () => {
                         Date
                       </p>
                       <p className="font-semibold text-slate-200">
-                        {new Date(meeting.timeSlot).toLocaleDateString(
-                          "en-US",
-                          {
-                            weekday: "long",
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
+                        {(() => {
+                          // Convert UTC date back to IST by adding 5:30 hours
+                          const date = new Date(meeting.timeSlot);
+                          const istDate = new Date(
+                            date.getTime() + 5.5 * 60 * 60 * 1000
+                          );
+                          const day = String(istDate.getUTCDate()).padStart(
+                            2,
+                            "0"
+                          );
+                          const month = String(
+                            istDate.getUTCMonth() + 1
+                          ).padStart(2, "0");
+                          const year = istDate.getUTCFullYear();
+                          return `${day}/${month}/${year}`;
+                        })()}
                       </p>
                     </div>
                   </div>
@@ -343,15 +366,25 @@ const MeetingDetails = () => {
                         Time
                       </p>
                       <p className="font-semibold text-slate-200">
-                        {new Date(meeting.timeSlot).toLocaleTimeString(
-                          "en-IN",
-                          {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            timeZone: "Asia/Kolkata",
-                            timeZoneName: "short",
-                          }
-                        )}
+                        {(() => {
+                          // Convert UTC time back to IST by adding 5:30 hours
+                          const date = new Date(meeting.timeSlot);
+                          const istDate = new Date(
+                            date.getTime() + 5.5 * 60 * 60 * 1000
+                          );
+                          const hour24 = istDate.getUTCHours();
+                          const minute = String(
+                            istDate.getUTCMinutes()
+                          ).padStart(2, "0");
+                          const hour12 =
+                            hour24 === 0
+                              ? 12
+                              : hour24 > 12
+                              ? hour24 - 12
+                              : hour24;
+                          const ampm = hour24 >= 12 ? "PM" : "AM";
+                          return `${hour12}:${minute} ${ampm} IST`;
+                        })()}
                       </p>
                     </div>
                   </div>
@@ -414,12 +447,15 @@ const MeetingDetails = () => {
                 disabled={meeting.status === "completed" && !isMeetingStarted()}
                 className={`w-full max-w-sm inline-flex items-center justify-center gap-3 bte px-8 py-4 rounded-xl cursor-pointer
                    ${
-                          meeting.status === "completed"
-                            ? "bg-slate-700 text-slate-500 cursor-not-allowed"
-                            : "bg-slate-900/50 text-cyan-400 border-2 border-cyan-500/50 hover:border-cyan-400 hover:bg-slate-900 shadow-lg hover:shadow-xl hover:shadow-cyan-500/30"
-                        }
-                    ${isMeetingStarted() ? "bg-blue-600" : "bg-gray-400 cursor-not-allowed"}`
-                    }
+                     meeting.status === "completed"
+                       ? "bg-slate-700 text-slate-500 cursor-not-allowed"
+                       : "bg-slate-900/50 text-cyan-400 border-2 border-cyan-500/50 hover:border-cyan-400 hover:bg-slate-900 shadow-lg hover:shadow-xl hover:shadow-cyan-500/30"
+                   }
+                    ${
+                      isMeetingStarted()
+                        ? "bg-blue-600"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }`}
               >
                 <Video className="w-6 h-6 group-hover:scale-110 transition-transform" />
                 Start Meeting

@@ -19,9 +19,6 @@ export const jwtAuth = (req, res, next) => {
       email: decoded.email,
     };
 
-    console.log("JWT decoded payload:", decoded);
-    console.log("Setting req.user.userId:", decoded.userId);
-
     next();
   } catch (err) {
     console.error("JWT Auth error:", err.message);

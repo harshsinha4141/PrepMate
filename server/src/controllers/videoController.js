@@ -11,6 +11,17 @@ export const startInterview = async (req, res) => {
     const id = _id || meetingId;
     const meeting = await Meeting.findOne({ $or: [{ _id: id }, { meetingId: id }] });
     if (!meeting) return res.status(404).json({ message: "Meeting not found" });
+
+    // Check if meeting time has arrived (stored as IST in UTC)
+    const now = new Date();
+    const meetingTime = new Date(meeting.timeSlot);
+    
+    if (now < meetingTime) {
+      return res.status(400).json({ 
+        message: "Meeting can only be started at or after the scheduled time" 
+      });
+    }
+
     if (!meeting.startedUsers) meeting.startedUsers = [];
     if (!meeting.startedUsers.includes(userId)) {
       meeting.startedUsers.push(userId);
@@ -65,19 +76,19 @@ export const endInterview = async (req, res) => {
       // non-fatal
     }
 
-    // Also increment interviewee counters (they took this interview)
+    // Also increment interviewee counters (they gave this interview)
     try {
       if (meeting.intervieweeId) {
         const interviewee = await Interviewee.findById(meeting.intervieweeId).populate("userId");
         if (interviewee) {
-          interviewee.interviewsTaken = (interviewee.interviewsTaken || 0) + 1;
+          interviewee.interviewsGiven = (interviewee.interviewsGiven || 0) + 1;
           await interviewee.save();
 
-          // increment the User.interviewsTaken for the interviewee as well
+          // increment the User.interviewsGiven for the interviewee as well
           if (interviewee.userId) {
             const intervieweeUser = await User.findById(interviewee.userId._id || interviewee.userId);
             if (intervieweeUser) {
-              intervieweeUser.interviewsTaken = (intervieweeUser.interviewsTaken || 0) + 1;
+              intervieweeUser.interviewsGiven = (intervieweeUser.interviewsGiven || 0) + 1;
               await intervieweeUser.save();
             }
           }

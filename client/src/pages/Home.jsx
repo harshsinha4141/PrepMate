@@ -233,7 +233,7 @@ export default function PrepMateHome() {
                   <p className="text-3xl font-bold text-cyan-400">
                     {userStats?.interviewsTaken}
                   </p>
-                  <p className="text-slate-400">Total Sessions</p>
+                  <p className="text-slate-400">As Interviewer</p>
                 </div>
                 <div className="bg-cyan-900/30 border border-cyan-700/50 p-3 rounded-lg">
                   <MessageCircle className="w-10 h-10 text-cyan-400" />
@@ -261,7 +261,7 @@ export default function PrepMateHome() {
                   <p className="text-3xl font-bold text-emerald-400">
                     {userStats?.interviewsGiven ?? 0}
                   </p>
-                  <p className="text-slate-400">Interviews Given</p>
+                  <p className="text-slate-400">As Interviewee</p>
                 </div>
                 <div className="bg-emerald-900/30 border border-emerald-700/50 p-3 rounded-lg">
                   <Trophy className="w-10 h-10 text-emerald-400" />

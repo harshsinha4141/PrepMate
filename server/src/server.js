@@ -226,3 +226,4 @@ export { io };
 
 // Start server
 server.listen(PORT);
+// Server running on port

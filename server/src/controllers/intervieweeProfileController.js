@@ -22,7 +22,6 @@ export const getIncomingMeetings = async (req, res) => {
       count: meetings.length,
       meetings
     });
-    console.log("meetings:-",meetings);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Something went wrong" });

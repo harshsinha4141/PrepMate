@@ -7,8 +7,13 @@ import User from "../models/User.js";
 
 // 📌 Book a meeting (Interviewee)
 export const bookMeeting = async (req, res) => {
+  // console.log("🚨🚨 BOOKING FUNCTION HIT 🚨🚨");
+  // console.log("Current time:", new Date().toISOString());
+  
   try {
+    // console.log("🔥 BOOKING REQUEST RECEIVED 🔥");
     const { roleName, roleType, timeSlot, resumeLink } = req.body;
+    // console.log("📋 Request body:", { roleName, roleType, timeSlot, resumeLink });
 
     if (!roleName || !roleType || !timeSlot || !resumeLink) {
       return res.status(400).json({ message: "All fields are required" });
@@ -20,8 +25,8 @@ export const bookMeeting = async (req, res) => {
 
     // req.user is full User doc (from checkUserStatus middleware)
     const user = req.user;
-    console.log("🧠 req.user from middleware:", req.user);
-    console.log("🧠 req.headers.authorization:", req.headers.authorization);
+    // console.log("🧠 req.user from middleware:", req.user);
+    // console.log("🧠 req.headers.authorization:", req.headers.authorization);
 
     if (!user) return res.status(404).json({ message: "User not found" });
     if (user.coins < 50) return res.status(400).json({ message: "Not enough coins" });
@@ -39,9 +44,10 @@ export const bookMeeting = async (req, res) => {
       await interviewee.save();
     }
 
+    // Store time directly as received from frontend (IST)
+    // timeSlot comes as "2025-11-19T12:50" from datetime-local input
+    // Store as-is without any timezone conversion
     const meetingDate = new Date(timeSlot);
-    // const istOffsetMs = 5.5 * 60 * 60 * 1000;
-    // const adjustedTimeSlot = new Date(meetingDate.getTime() - istOffsetMs);
 
     // ✅ Prevent double booking within ±1 hour
     const clash = await Meeting.findOne({
@@ -89,7 +95,7 @@ export const bookMeeting = async (req, res) => {
       interviewee.interests.push({ roleType: normalizedRoleType, roleName: normalizedRoleName });
     }
 
-    console.log("Interests before saving:", JSON.stringify(interviewee.interests, null, 2));
+    // console.log("Interests before saving:", JSON.stringify(interviewee.interests, null, 2));
     await interviewee.save();
 
     res.status(201).json({
@@ -98,7 +104,7 @@ export const bookMeeting = async (req, res) => {
     });
 
   } catch (err) {
-    console.error("❌ Error in bookMeeting:", err);
+    // Error in bookMeeting
     res.status(500).json({ message: "Something went wrong" });
   }
 };

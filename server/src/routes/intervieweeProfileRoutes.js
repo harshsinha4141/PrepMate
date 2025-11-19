@@ -7,7 +7,6 @@ import {
 import { checkUserStatus } from "../middlewares/checkUserStatus.js";
 
 const router = express.Router();
-
 // 📌 Get upcoming meetings
 router.get("/upcoming", jwtAuth, checkUserStatus, getIncomingMeetings);
 

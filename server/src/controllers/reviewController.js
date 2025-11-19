@@ -39,12 +39,14 @@ export const giveReview = async (req, res) => {
     if (!interviewer) return res.status(404).json({ message: "Interviewer not found" });
 
     interviewer.ratingSum += rating;
-    interviewer.interviewsTaken += 1;
+    // Don't increment interviewsTaken here - it's already done in completeMeeting
     await interviewer.save();
 
-    // rating updated
-
+    // Update User model's ratingSum as well for getUserStats
     const user = await User.findById(interviewer.userId._id);
+    user.ratingSum += rating;
+    
+    // Calculate average rating using the existing count (already incremented in completeMeeting)
     const avgRating = interviewer.ratingSum / interviewer.interviewsTaken;
 
     if (avgRating <= 3) {
