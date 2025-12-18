@@ -21,16 +21,20 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+const allowedOrigins = [
+  "https://prep-mate-gold.vercel.app",
+  "https://prepmate-1-82bj.onrender.com",
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173", 
-      "http://localhost:5174", 
-      "http://localhost:5175", 
-      "http://localhost:3000",
-      "https://prepmate-client.vercel.app", // Replace with your actual Vercel domain
-      "https://prepmate-7362.onrender.com" // Allow your own server domain
-    ], 
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
